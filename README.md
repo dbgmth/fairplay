@@ -66,4 +66,10 @@ vercel --prod
 
 ## License
 
-The code in this repository is released under the MIT License (see `LICENSE` if added). The Fair Play system, framework, and brand are the property of Eve Rodsky and are not licensed by this project.
+The code, original SVG icons, and original written content in this repository are released under the [MIT License](LICENSE). You're free to use, fork, modify, and redistribute the code.
+
+The MIT license **does not** cover the *Fair Play* name, the CPE framework, or the original card illustrations and language created by Eve Rodsky — those remain the property of their respective owners. Any fork should preserve the disclaimer in the footer and README.
+
+## Contributing
+
+PRs welcome — bug fixes, accessibility improvements, new icons, translations, etc. Please keep changes consistent with the existing aesthetic and don't reproduce copyrighted Fair Play card text or artwork.
