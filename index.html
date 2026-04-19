@@ -1,0 +1,1118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Fair Play — the household card game</title>
+<style>
+  :root {
+    --cream: #efe1d1;
+    --cream-2: #f5e6dd;
+    --cream-3: #e6d4bf;
+    --paper: #f8eee0;
+    --ink: #1a1a1a;
+    --ink-2: #5b4a3a;
+    --line: #d6c2a8;
+    --red: #e0501c;
+    --red-deep: #b53d10;
+    --mustard: #f4a420;
+    --a: #2b6cb8;
+    --a-tint: #cfe0f0;
+    --b: #b83270;
+    --b-tint: #ecd0df;
+    --both: #6b46a8;
+    --both-tint: #dccfeb;
+    --un: #8a7a66;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--cream);
+    color: var(--ink);
+    font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Helvetica Neue", system-ui, sans-serif;
+  }
+  body {
+    min-height: 100vh;
+    background-image:
+      radial-gradient(rgba(120,90,50,0.04) 1px, transparent 1px),
+      radial-gradient(rgba(120,90,50,0.03) 1px, transparent 1px);
+    background-size: 24px 24px, 33px 33px;
+    background-position: 0 0, 12px 18px;
+  }
+  .serif { font-family: "Cooper Std", "Bookmania", "Georgia", "Times New Roman", serif; letter-spacing: 0.04em; }
+  .label-vert {
+    font-family: ui-sans-serif, -apple-system, system-ui, sans-serif;
+    color: var(--red);
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-size: 11px;
+  }
+
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(239,225,209,0.96);
+    border-bottom: 1px solid var(--line);
+    backdrop-filter: blur(8px);
+  }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 18px 24px 14px; }
+  .title-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  h1 {
+    font-family: "Cooper Std", "Bookmania", "Georgia", serif;
+    font-size: 30px; margin: 0; font-weight: 700;
+    letter-spacing: 0.02em; color: var(--ink);
+  }
+  h1 .play { color: var(--red); font-style: italic; }
+  .sub { color: var(--ink-2); font-size: 13px; margin-top: 2px; max-width: 540px; line-height: 1.45; }
+
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  button, .btn {
+    background: var(--paper); color: var(--ink); border: 1px solid var(--ink);
+    padding: 8px 14px; border-radius: 0;
+    font-size: 12px; cursor: pointer; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    transition: transform 0.05s, background 0.15s;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  button:hover { background: #fff5e8; transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--ink); }
+  button:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--ink); }
+  button.primary { background: var(--mustard); }
+  button.danger { background: var(--cream-2); }
+  button.danger:hover { background: #f8d8c8; }
+  input[type="text"] {
+    background: var(--paper); color: var(--ink); border: 1px solid var(--ink);
+    padding: 8px 10px; border-radius: 0; font-size: 13px; min-width: 150px;
+    font-family: inherit;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  input[type="text"]:focus { outline: none; background: #fff7ea; }
+  input[type="text"]::placeholder { color: #a08a72; }
+
+  .scoreboard {
+    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px;
+    margin-top: 14px;
+  }
+  .stat {
+    background: var(--paper); border: 1px solid var(--ink);
+    padding: 10px 14px; box-shadow: 3px 3px 0 var(--ink);
+    display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  }
+  .stat .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-2); font-weight: 700; }
+  .stat .val { font-family: "Cooper Std", "Georgia", serif; font-size: 28px; font-weight: 700; }
+  .stat.a { border-left: 5px solid var(--a); }
+  .stat.b { border-left: 5px solid var(--b); }
+  .stat.both { border-left: 5px solid var(--both); }
+  .stat.un { border-left: 5px solid var(--un); }
+
+  .balance {
+    margin-top: 12px;
+    background: var(--paper); border: 1px solid var(--ink);
+    padding: 10px 14px; box-shadow: 3px 3px 0 var(--ink);
+  }
+  .balance-bar {
+    position: relative; height: 12px; overflow: hidden;
+    background: var(--cream-3); display: flex;
+    border: 1px solid var(--ink);
+  }
+  .bar-a { background: var(--a); }
+  .bar-both { background: var(--both); }
+  .bar-b { background: var(--b); }
+  .bar-un { background: repeating-linear-gradient(45deg, var(--cream-3), var(--cream-3) 4px, #c9b497 4px, #c9b497 8px); }
+  .balance-legend {
+    display: flex; gap: 14px; margin-top: 8px; font-size: 11px;
+    color: var(--ink-2); flex-wrap: wrap; text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .dot { display: inline-block; width: 10px; height: 10px; border: 1px solid var(--ink); vertical-align: middle; margin-right: 6px; }
+
+  main { padding: 24px; max-width: 1240px; margin: 0 auto; }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; align-items: center; }
+  .chip {
+    background: transparent; border: 1px solid var(--ink); color: var(--ink);
+    padding: 5px 10px; font-size: 11px; cursor: pointer;
+    user-select: none; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .chip:hover { background: var(--cream-2); }
+  .chip.active { color: #fff7ea; background: var(--ink); }
+  .chip .swatch { display: inline-block; width: 8px; height: 8px; margin-right: 6px; vertical-align: middle; border: 1px solid var(--ink); }
+
+  .category {
+    margin-bottom: 36px;
+  }
+  .category-head {
+    display: flex; align-items: baseline; gap: 14px; margin-bottom: 14px;
+    border-bottom: 2px solid var(--ink); padding-bottom: 6px;
+  }
+  .category-head h2 {
+    font-family: "Cooper Std", "Georgia", serif;
+    font-size: 22px; margin: 0; font-weight: 700; color: var(--red);
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .category-head .count { font-size: 12px; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+  }
+
+  /* The card */
+  .card {
+    position: relative;
+    aspect-ratio: 5 / 7;
+    background: var(--cream-2);
+    border: 1.5px solid var(--ink);
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    box-shadow: 4px 4px 0 var(--ink);
+    display: flex; flex-direction: column;
+    padding: 12px 14px;
+  }
+  .card:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink); }
+  .card:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--ink); }
+
+  .card.held-A { background: linear-gradient(180deg, var(--a-tint) 0%, var(--cream-2) 60%); }
+  .card.held-B { background: linear-gradient(180deg, var(--b-tint) 0%, var(--cream-2) 60%); }
+  .card.held-BOTH { background: linear-gradient(180deg, var(--both-tint) 0%, var(--cream-2) 60%); }
+
+  .card-cat-left, .card-cat-right {
+    position: absolute;
+    color: var(--red);
+    font-weight: 800;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .card-cat-left {
+    left: 6px; top: 18px;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+  }
+  .card-cat-right {
+    right: 6px; bottom: 18px;
+    writing-mode: vertical-rl;
+  }
+
+  .card-title {
+    font-family: "Cooper Std", "Georgia", "Times New Roman", serif;
+    font-size: 12px;
+    line-height: 1.15;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink);
+    text-align: right;
+    margin-left: 22px;
+    margin-right: 16px;
+    font-weight: 700;
+    min-height: 30px;
+  }
+
+  .card-art {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center;
+    margin: 6px 14px;
+    position: relative;
+  }
+  .card-art svg {
+    width: 70%; height: 70%;
+    max-width: 110px; max-height: 110px;
+  }
+  .card-art .sparkle {
+    position: absolute; width: 14px; height: 14px;
+  }
+  .card-art .sparkle.s1 { top: 6%; left: 6%; transform: rotate(-12deg); }
+  .card-art .sparkle.s2 { top: 14%; left: 22%; width: 9px; height: 9px; transform: rotate(20deg); }
+  .card-art .sparkle.s3 { bottom: 8%; right: 8%; width: 11px; height: 11px; transform: rotate(15deg); }
+
+  .card-foot {
+    display: flex; align-items: center; justify-content: space-between; gap: 6px;
+    margin-left: 22px; margin-right: 16px;
+    font-size: 9px;
+    color: var(--ink-2);
+    text-transform: uppercase; letter-spacing: 0.1em;
+    font-weight: 700;
+  }
+  .card-foot .holder {
+    padding: 2px 6px;
+    background: var(--cream-3);
+    border: 1px solid var(--ink);
+  }
+  .card-foot .holder.A { background: var(--a); color: #fff; border-color: var(--a); }
+  .card-foot .holder.B { background: var(--b); color: #fff; border-color: var(--b); }
+  .card-foot .holder.BOTH { background: var(--both); color: #fff; border-color: var(--both); }
+  .card-foot .holder.NONE { background: transparent; color: var(--ink-2); }
+  .card-foot .daily { color: var(--red); }
+
+  /* Modal */
+  .scrim {
+    position: fixed; inset: 0; background: rgba(40,28,15,0.55);
+    display: none; align-items: center; justify-content: center; z-index: 30;
+    padding: 16px;
+  }
+  .scrim.show { display: flex; }
+  .modal {
+    background: var(--cream-2);
+    border: 1.5px solid var(--ink);
+    box-shadow: 8px 8px 0 var(--ink);
+    max-width: 720px; width: 100%;
+    display: grid; grid-template-columns: 220px 1fr;
+    overflow: hidden;
+  }
+  .modal-card {
+    background: var(--cream-2);
+    padding: 16px;
+    border-right: 1.5px solid var(--ink);
+    display: flex; flex-direction: column;
+    position: relative; min-height: 320px;
+  }
+  .modal-card .card-cat-left, .modal-card .card-cat-right { color: var(--red); }
+  .modal-body { padding: 22px 24px; overflow: auto; max-height: 80vh; }
+  .modal-body h3 {
+    font-family: "Cooper Std", "Georgia", serif; margin: 0 0 4px;
+    font-size: 24px; text-transform: uppercase; letter-spacing: 0.03em;
+  }
+  .modal-cat { color: var(--red); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; font-weight: 800; margin-bottom: 16px; }
+
+  .cpe { display: grid; gap: 10px; margin: 6px 0 16px; }
+  .cpe-row {
+    background: var(--paper);
+    border: 1px solid var(--ink); padding: 12px 14px;
+  }
+  .cpe-row .k {
+    font-family: "Cooper Std", "Georgia", serif;
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--red); font-weight: 700;
+  }
+  .cpe-row .v { font-size: 14px; color: var(--ink); margin-top: 4px; line-height: 1.5; }
+
+  .assign { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 6px; }
+  .assign button { width: 100%; padding: 10px 8px; font-size: 11px; }
+  .assign button.A { background: var(--a-tint); }
+  .assign button.B { background: var(--b-tint); }
+  .assign button.BOTH { background: var(--both-tint); }
+  .assign button.A.active { background: var(--a); color: #fff; }
+  .assign button.B.active { background: var(--b); color: #fff; }
+  .assign button.BOTH.active { background: var(--both); color: #fff; }
+  .assign button.NONE.active { background: var(--ink); color: var(--cream); }
+
+  .modal-foot { display: flex; justify-content: space-between; gap: 8px; margin-top: 16px; align-items: center; }
+  .modal-foot .sub { font-size: 11px; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
+
+  .hint {
+    color: var(--ink-2); font-size: 12px; line-height: 1.6;
+    margin-top: 24px; padding: 16px 18px;
+    background: var(--paper); border: 1px solid var(--line);
+    border-left: 4px solid var(--red);
+  }
+  .hint strong { color: var(--ink); }
+
+  @media (max-width: 720px) {
+    .scoreboard { grid-template-columns: 1fr 1fr; }
+    h1 { font-size: 24px; }
+    .wrap, main { padding-left: 16px; padding-right: 16px; }
+    .grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .modal { grid-template-columns: 1fr; }
+    .modal-card { border-right: 0; border-bottom: 1.5px solid var(--ink); min-height: 260px; }
+    .modal-card .demo-card { max-width: 180px; margin: 0 auto; }
+  }
+
+  /* Hand-drawn wobble filter applied via SVG */
+  .rough { filter: url(#rough); }
+</style>
+</head>
+<body>
+
+<!-- Hidden SVG defs: filter + icon library -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="rough" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="3" />
+      <feDisplacementMap in="SourceGraphic" scale="1.4" />
+    </filter>
+
+    <!-- Sparkle (4-point star) -->
+    <symbol id="i-sparkle" viewBox="0 0 24 24">
+      <path d="M12 2 L13.5 10.5 L22 12 L13.5 13.5 L12 22 L10.5 13.5 L2 12 L10.5 10.5 Z"
+            fill="#f4a420" stroke="#1a1a1a" stroke-width="1" stroke-linejoin="round" />
+    </symbol>
+
+    <!-- Generic icons (line-art, hand-drawn feel via the rough filter applied at use-site) -->
+    <symbol id="i-broom" viewBox="0 0 64 64">
+      <g fill="none" stroke="#1a1a1a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M40 8 L24 36" />
+        <path d="M22 32 L46 50 L42 56 L18 38 Z" fill="#f4a420"/>
+        <path d="M18 38 L8 56 M22 42 L14 58 M26 46 L20 60" />
+      </g>
+    </symbol>
+
+    <symbol id="i-bowl" viewBox="0 0 64 64">
+      <g fill="none" stroke="#1a1a1a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 30 Q32 22 56 30 L48 52 Q32 58 16 52 Z" fill="#fff"/>
+        <path d="M16 16 Q20 12 24 16 M28 14 Q32 10 36 14 M40 16 Q44 12 48 16" />
+      </g>
+    </symbol>
+
+    <symbol id="i-plate" viewBox="0 0 64 64">
+      <g fill="none" stroke="#1a1a1a" stroke-width="2.4">
+        <ellipse cx="32" cy="36" rx="24" ry="6" fill="#fff"/>
+        <ellipse cx="32" cy="32" rx="20" ry="5" fill="#f4a420"/>
+        <path d="M12 34 L8 50 M52 34 L56 50" />
+      </g>
+    </symbol>
+
+    <symbol id="i-shirt" viewBox="0 0 64 64">
+      <g fill="#fff" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <path d="M20 12 L12 20 L18 26 L22 22 L22 56 L42 56 L42 22 L46 26 L52 20 L44 12 L36 14 Q32 18 28 14 Z"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-house" viewBox="0 0 64 64">
+      <g fill="none" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <path d="M10 30 L32 12 L54 30 L54 54 L10 54 Z" fill="#fff"/>
+        <path d="M26 54 L26 38 L38 38 L38 54" fill="#f4a420"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-trash" viewBox="0 0 64 64">
+      <g fill="none" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <path d="M16 18 L20 56 L44 56 L48 18 Z" fill="#fff"/>
+        <path d="M12 18 L52 18" />
+        <path d="M26 12 L38 12 L38 18 L26 18 Z" fill="#f4a420"/>
+        <path d="M26 26 L26 50 M32 26 L32 50 M38 26 L38 50" />
+      </g>
+    </symbol>
+
+    <symbol id="i-mail" viewBox="0 0 64 64">
+      <g fill="#fff" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <rect x="8" y="16" width="48" height="32"/>
+        <path d="M8 16 L32 36 L56 16" fill="none"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-plant" viewBox="0 0 64 64">
+      <g fill="none" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <path d="M32 50 L32 32" />
+        <path d="M32 32 Q14 28 14 14 Q30 16 32 32" fill="#f4a420"/>
+        <path d="M32 32 Q50 30 52 18 Q36 18 32 32" fill="#fff"/>
+        <path d="M22 56 L42 56 L40 50 L24 50 Z" fill="#fff"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-laptop" viewBox="0 0 64 64">
+      <g fill="none" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <rect x="12" y="14" width="40" height="28" fill="#fff"/>
+        <path d="M6 46 L58 46 L54 54 L10 54 Z" fill="#f4a420"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-box" viewBox="0 0 64 64">
+      <g fill="#fff" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <path d="M8 22 L32 12 L56 22 L56 50 L32 60 L8 50 Z"/>
+        <path d="M8 22 L32 32 L56 22 M32 32 L32 60" fill="none"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-car" viewBox="0 0 64 64">
+      <g fill="#fff" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <path d="M6 40 L12 26 L52 26 L58 40 L58 48 L6 48 Z" fill="#f4a420"/>
+        <circle cx="18" cy="48" r="6" fill="#1a1a1a"/>
+        <circle cx="46" cy="48" r="6" fill="#1a1a1a"/>
+        <path d="M18 26 L22 18 L42 18 L46 26" fill="#fff"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-suitcase" viewBox="0 0 64 64">
+      <g fill="#fff" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <rect x="10" y="20" width="44" height="34" fill="#f4a420"/>
+        <path d="M22 20 L22 12 L42 12 L42 20" fill="none"/>
+        <path d="M10 32 L54 32" />
+      </g>
+    </symbol>
+
+    <symbol id="i-bath" viewBox="0 0 64 64">
+      <g fill="none" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <path d="M6 32 L58 32 L54 50 Q32 58 10 50 Z" fill="#fff"/>
+        <circle cx="32" cy="20" r="6" fill="#f4a420"/>
+        <path d="M28 22 L36 22 M30 26 Q32 28 34 26" />
+        <path d="M14 50 L14 58 M50 50 L50 58" />
+      </g>
+    </symbol>
+
+    <symbol id="i-moon-book" viewBox="0 0 64 64">
+      <g fill="none" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <path d="M16 12 Q10 18 14 24 Q22 22 24 14 Q20 16 16 12 Z" fill="#f4a420"/>
+        <path d="M30 14 L30 22 M28 16 L32 16 M30 20 L30 22" />
+        <path d="M10 30 L54 30 L54 56 L10 56 Z" fill="#fff"/>
+        <path d="M32 30 L32 56" />
+        <path d="M14 36 L28 36 M14 42 L26 42 M36 36 L50 36 M36 42 L48 42" />
+      </g>
+    </symbol>
+
+    <symbol id="i-backpack" viewBox="0 0 64 64">
+      <g fill="#f4a420" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <path d="M14 22 Q14 14 22 14 L42 14 Q50 14 50 22 L50 56 L14 56 Z"/>
+        <path d="M22 14 Q22 6 32 6 Q42 6 42 14" fill="none"/>
+        <rect x="22" y="30" width="20" height="14" fill="#fff"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-tooth" viewBox="0 0 64 64">
+      <g fill="#fff" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <path d="M16 16 Q20 8 32 12 Q44 8 48 16 Q50 32 42 48 L38 56 L36 40 Q32 38 28 40 L26 56 L22 48 Q14 32 16 16 Z"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-heart" viewBox="0 0 64 64">
+      <g fill="#e0501c" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <path d="M32 56 L8 32 Q4 18 16 14 Q26 14 32 24 Q38 14 48 14 Q60 18 56 32 Z"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-gift" viewBox="0 0 64 64">
+      <g fill="#fff" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <rect x="8" y="24" width="48" height="32" fill="#f4a420"/>
+        <rect x="28" y="24" width="8" height="32" fill="#fff"/>
+        <path d="M8 24 L56 24" />
+        <path d="M32 24 Q24 12 18 14 Q14 18 18 22 Q24 24 32 24 Q40 24 46 22 Q50 18 46 14 Q40 12 32 24 Z" fill="#fff"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-cake" viewBox="0 0 64 64">
+      <g fill="#fff" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <path d="M30 6 L30 14 M34 6 L34 14" />
+        <path d="M28 14 L36 14" />
+        <path d="M14 24 Q32 20 50 24 L50 38 Q32 42 14 38 Z" fill="#f4a420"/>
+        <path d="M10 38 L54 38 L54 56 L10 56 Z" fill="#fff"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-snowflake" viewBox="0 0 64 64">
+      <g fill="none" stroke="#1a1a1a" stroke-width="2.4" stroke-linecap="round">
+        <circle cx="32" cy="32" r="6" fill="#f4a420"/>
+        <path d="M32 6 L32 58 M9 19 L55 45 M9 45 L55 19" />
+        <path d="M28 10 L32 6 L36 10 M28 54 L32 58 L36 54" />
+        <path d="M12 14 L9 19 L14 22 M50 42 L55 45 L52 50" />
+        <path d="M14 42 L9 45 L12 50 M52 14 L55 19 L50 22" />
+      </g>
+    </symbol>
+
+    <symbol id="i-pet" viewBox="0 0 64 64">
+      <g fill="#fff" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <ellipse cx="32" cy="38" rx="20" ry="14"/>
+        <circle cx="14" cy="20" r="6" fill="#f4a420"/>
+        <circle cx="50" cy="20" r="6" fill="#f4a420"/>
+        <circle cx="26" cy="34" r="2" fill="#1a1a1a"/>
+        <circle cx="38" cy="34" r="2" fill="#1a1a1a"/>
+        <path d="M30 42 Q32 44 34 42" />
+      </g>
+    </symbol>
+
+    <symbol id="i-calendar" viewBox="0 0 64 64">
+      <g fill="#fff" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <rect x="8" y="14" width="48" height="42"/>
+        <path d="M8 24 L56 24" />
+        <path d="M18 8 L18 18 M46 8 L46 18" />
+        <path d="M16 32 L20 32 M28 32 L32 32 M40 32 L44 32" />
+        <path d="M16 42 L20 42 M28 42 L32 42 M40 42 L44 42" />
+        <rect x="36" y="36" width="10" height="10" fill="#f4a420" stroke-width="0"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-money" viewBox="0 0 64 64">
+      <g fill="#fff" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <rect x="6" y="18" width="52" height="30" fill="#f4a420"/>
+        <circle cx="32" cy="33" r="9" fill="#fff"/>
+        <text x="32" y="38" text-anchor="middle" font-family="Georgia,serif" font-weight="bold" font-size="14" fill="#1a1a1a" stroke="none">$</text>
+      </g>
+    </symbol>
+
+    <symbol id="i-medical" viewBox="0 0 64 64">
+      <g fill="#fff" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <rect x="10" y="10" width="44" height="44"/>
+        <path d="M28 18 L36 18 L36 28 L46 28 L46 36 L36 36 L36 46 L28 46 L28 36 L18 36 L18 28 L28 28 Z" fill="#e0501c"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-stroller" viewBox="0 0 64 64">
+      <g fill="#fff" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <path d="M10 16 Q32 16 36 38 L10 38 Z" fill="#f4a420"/>
+        <path d="M36 38 L46 18" />
+        <circle cx="18" cy="48" r="6" fill="#1a1a1a"/>
+        <circle cx="40" cy="48" r="6" fill="#1a1a1a"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-handheart" viewBox="0 0 64 64">
+      <g fill="#fff" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <path d="M12 50 L12 32 Q12 24 20 24 L36 24 Q42 24 42 30 Q42 36 36 36 L26 36" />
+        <path d="M44 12 L32 24 L20 12" fill="#e0501c"/>
+        <path d="M32 24 Q24 16 18 18 Q14 22 18 26 Q24 28 32 24 Q40 28 46 26 Q50 22 46 18 Q40 16 32 24 Z" fill="#e0501c"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-people" viewBox="0 0 64 64">
+      <g fill="#fff" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <circle cx="22" cy="22" r="7" fill="#f4a420"/>
+        <circle cx="42" cy="22" r="7" fill="#fff"/>
+        <path d="M8 50 Q12 36 22 36 Q32 36 36 50 Z" fill="#f4a420"/>
+        <path d="M28 50 Q32 36 42 36 Q52 36 56 50 Z" fill="#fff"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-star" viewBox="0 0 64 64">
+      <g fill="#f4a420" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <path d="M32 6 L40 26 L60 28 L44 42 L50 60 L32 50 L14 60 L20 42 L4 28 L24 26 Z"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-briefcase" viewBox="0 0 64 64">
+      <g fill="#f4a420" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <rect x="8" y="22" width="48" height="32"/>
+        <path d="M22 22 L22 14 L42 14 L42 22" fill="none"/>
+        <path d="M8 36 L56 36" />
+        <rect x="28" y="32" width="8" height="6" fill="#fff"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-ring" viewBox="0 0 64 64">
+      <g fill="none" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <circle cx="32" cy="40" r="16" fill="#fff"/>
+        <path d="M22 24 L28 12 L36 12 L42 24 L32 32 Z" fill="#f4a420"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-candle" viewBox="0 0 64 64">
+      <g fill="#fff" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <path d="M32 6 Q26 12 32 22 Q38 12 32 6 Z" fill="#f4a420"/>
+        <rect x="22" y="22" width="20" height="34"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-tools" viewBox="0 0 64 64">
+      <g fill="#fff" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <path d="M10 50 L28 32 L36 40 L18 58 Z" fill="#f4a420"/>
+        <path d="M30 30 L40 20 Q44 16 48 20 L52 24 Q56 28 52 32 L42 42 Z" fill="#fff"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-camera" viewBox="0 0 64 64">
+      <g fill="#fff" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <path d="M6 22 L20 22 L24 14 L40 14 L44 22 L58 22 L58 52 L6 52 Z"/>
+        <circle cx="32" cy="36" r="10" fill="#f4a420"/>
+        <circle cx="32" cy="36" r="5" fill="#fff"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-ball" viewBox="0 0 64 64">
+      <g fill="#f4a420" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <circle cx="32" cy="32" r="22"/>
+        <path d="M10 32 L54 32 M32 10 L32 54 M16 16 L48 48 M16 48 L48 16" fill="none"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-music" viewBox="0 0 64 64">
+      <g fill="#fff" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <path d="M22 50 L22 14 L48 8 L48 44" fill="none"/>
+        <ellipse cx="18" cy="50" rx="6" ry="5" fill="#f4a420"/>
+        <ellipse cx="44" cy="44" rx="6" ry="5" fill="#f4a420"/>
+        <path d="M22 22 L48 16" />
+      </g>
+    </symbol>
+
+    <symbol id="i-pen" viewBox="0 0 64 64">
+      <g fill="#fff" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <path d="M8 56 L14 42 L46 10 L54 18 L22 50 Z" fill="#f4a420"/>
+        <path d="M40 16 L48 24" />
+        <path d="M14 42 L22 50" />
+      </g>
+    </symbol>
+
+    <symbol id="i-sun" viewBox="0 0 64 64">
+      <g fill="#f4a420" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <circle cx="32" cy="32" r="12"/>
+        <path d="M32 6 L32 14 M32 50 L32 58 M6 32 L14 32 M50 32 L58 32 M14 14 L20 20 M44 44 L50 50 M50 14 L44 20 M14 50 L20 44" fill="none"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-handshake" viewBox="0 0 64 64">
+      <g fill="#fff" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <path d="M6 32 L20 24 L32 32 L44 24 L58 32 L58 44 L44 50 L32 44 L20 50 L6 44 Z" fill="#f4a420"/>
+        <path d="M20 24 L20 16 M44 24 L44 16" />
+      </g>
+    </symbol>
+
+    <symbol id="i-globe" viewBox="0 0 64 64">
+      <g fill="#fff" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <circle cx="32" cy="32" r="22" fill="#f4a420"/>
+        <path d="M10 32 L54 32 M32 10 Q44 32 32 54 Q20 32 32 10" fill="none"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-bed" viewBox="0 0 64 64">
+      <g fill="#fff" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <path d="M6 50 L6 30 L58 30 L58 50" />
+        <path d="M14 30 L14 22 L34 22 L34 30" fill="#f4a420"/>
+        <path d="M6 50 L58 50 L58 56 L6 56 Z"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-clock" viewBox="0 0 64 64">
+      <g fill="#fff" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <circle cx="32" cy="32" r="22"/>
+        <path d="M32 16 L32 32 L44 38" fill="none"/>
+        <circle cx="32" cy="32" r="2" fill="#1a1a1a"/>
+      </g>
+    </symbol>
+
+    <symbol id="i-key" viewBox="0 0 64 64">
+      <g fill="#fff" stroke="#1a1a1a" stroke-width="2.4" stroke-linejoin="round">
+        <circle cx="20" cy="32" r="12" fill="#f4a420"/>
+        <circle cx="20" cy="32" r="4" fill="#fff"/>
+        <path d="M32 32 L56 32 L56 40 M48 32 L48 40" fill="none"/>
+      </g>
+    </symbol>
+
+  </defs>
+</svg>
+
+<header>
+  <div class="wrap">
+    <div class="title-row">
+      <div>
+        <h1>Fair <span class="play">Play</span></h1>
+        <div class="sub">Divide the invisible work. Each card is held by one person — Conception, Planning, and Execution.</div>
+      </div>
+      <div class="controls">
+        <input id="nameA" type="text" placeholder="Partner A name" />
+        <input id="nameB" type="text" placeholder="Partner B name" />
+        <button id="dealBtn" class="primary" title="Randomly deal all unheld cards">Random Deal</button>
+        <button id="resetBtn" class="danger" title="Unassign all cards">Reset</button>
+      </div>
+    </div>
+
+    <div class="scoreboard">
+      <div class="stat a"><div class="label" id="lblA">Partner A</div><div class="val" id="cntA">0</div></div>
+      <div class="stat b"><div class="label" id="lblB">Partner B</div><div class="val" id="cntB">0</div></div>
+      <div class="stat both"><div class="label">Both</div><div class="val" id="cntBoth">0</div></div>
+      <div class="stat un"><div class="label">Unassigned</div><div class="val" id="cntUn">0</div></div>
+    </div>
+
+    <div class="balance">
+      <div class="balance-bar" id="bar"></div>
+      <div class="balance-legend">
+        <span><span class="dot" style="background:var(--a)"></span><span id="legA">Partner A</span></span>
+        <span><span class="dot" style="background:var(--b)"></span><span id="legB">Partner B</span></span>
+        <span><span class="dot" style="background:var(--both)"></span>Both</span>
+        <span><span class="dot" style="background:var(--cream-3)"></span>Unassigned</span>
+        <span style="margin-left:auto" id="balanceMsg"></span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="filters" id="filters"></div>
+  <div id="board"></div>
+
+  <div class="hint">
+    Click any card to view its <strong>Conception · Planning · Execution</strong> and assign a holder.
+    A card is held by one person — they own all three. <strong>Both</strong> is a fallback for shared cards.
+    Cards marked <strong style="color:var(--red)">Daily</strong> recur every day and carry the most weight.
+  </div>
+</main>
+
+<div class="scrim" id="scrim">
+  <div class="modal" id="modal">
+    <div class="modal-card" id="mCardPreview">
+      <!-- card preview rendered here -->
+    </div>
+    <div class="modal-body">
+      <h3 id="mTitle"></h3>
+      <div class="modal-cat" id="mCat"></div>
+      <div class="cpe">
+        <div class="cpe-row"><div class="k">Conception</div><div class="v" id="mC"></div></div>
+        <div class="cpe-row"><div class="k">Planning</div><div class="v" id="mP"></div></div>
+        <div class="cpe-row"><div class="k">Execution</div><div class="v" id="mE"></div></div>
+      </div>
+      <div class="assign" id="mAssign"></div>
+      <div class="modal-foot">
+        <button id="mClose">Close</button>
+        <span class="sub" id="mHolderLabel"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- Card data ---------- */
+const CATS = [
+  { id: "Home",       label: "Home" },
+  { id: "Out",        label: "Out" },
+  { id: "Caregiving", label: "Caregiving" },
+  { id: "Magic",      label: "Magic" },
+  { id: "Wild",       label: "Wild" },
+  { id: "Unicorn",    label: "Unicorn Space" },
+  { id: "Grind",      label: "Daily Grinds" },
+];
+
+const CARDS = [
+  // Home
+  { name: "Groceries", cat: "Home", icon: "i-bowl", c: "Notice the fridge, freezer, and pantry are running low.", p: "Build the list, choose the store, schedule the trip.", e: "Shop, pay, haul it in, and put it all away." },
+  { name: "Meals — Weekday Breakfast", cat: "Home", daily: true, icon: "i-plate", c: "Anticipate everyone's morning hunger and dietary needs.", p: "Decide the menu and ensure ingredients are stocked.", e: "Prepare and serve breakfast on weekdays." },
+  { name: "Meals — Weekday Dinner", cat: "Home", daily: true, icon: "i-plate", c: "Plan a balanced rotation that the household will eat.", p: "Schedule prep time, defrost, gather ingredients.", e: "Cook and serve weekday dinners." },
+  { name: "Meals — Weekend", cat: "Home", icon: "i-bowl", c: "Imagine weekend meals — leisurely or simple.", p: "Plan menus, brunches, or eating out.", e: "Cook, host, or coordinate weekend meals." },
+  { name: "Dishes", cat: "Home", daily: true, icon: "i-plate", c: "Notice the sink, dishwasher state, and counter clutter.", p: "Decide cadence — after each meal or end of day.", e: "Wash, load, run, and unload the dishwasher." },
+  { name: "Laundry", cat: "Home", icon: "i-shirt", c: "Track hampers and seasonal/clothing needs.", p: "Sort, schedule loads, plan dry cleaning runs.", e: "Wash, dry, fold, and put away every item." },
+  { name: "Cleaning", cat: "Home", icon: "i-broom", c: "See dust, grime, clutter before it becomes a problem.", p: "Choose products, frequency, and (if applicable) hire help.", e: "Clean (or manage cleaners) end-to-end." },
+  { name: "Garbage & Recycling", cat: "Home", daily: true, icon: "i-trash", c: "Anticipate pickup days and overflowing bins.", p: "Stage bags, recycling sorting, special drop-offs.", e: "Take out trash, recycling, compost on schedule." },
+  { name: "Mail & Packages", cat: "Home", daily: true, icon: "i-mail", c: "Watch for incoming mail, packages, and time-sensitive notices.", p: "Sort, file, action, or recycle.", e: "Bring it in, open it, respond, return what's wrong." },
+  { name: "Lawn & Plants", cat: "Home", icon: "i-plant", c: "See what's wilting, growing, or needs trimming.", p: "Schedule watering, mowing, seasonal pruning.", e: "Water, mow, prune, or coordinate the gardener." },
+  { name: "Home Maintenance", cat: "Home", icon: "i-tools", c: "Notice what's broken, leaking, or due for service.", p: "Find pros, schedule visits, get quotes.", e: "Be there for the work, pay, follow up." },
+  { name: "Furnishings", cat: "Home", icon: "i-house", c: "Sense when a room needs an update or what's missing.", p: "Research, budget, choose pieces.", e: "Buy, assemble, place, and remove the old." },
+  { name: "Dry Cleaning", cat: "Home", icon: "i-shirt", c: "Notice items that need professional cleaning.", p: "Pick a service, set a cadence.", e: "Drop off, pay, pick up, hang up." },
+  { name: "Electronics & IT", cat: "Home", icon: "i-laptop", c: "Anticipate device issues, updates, replacements.", p: "Research, choose, plan installs and migrations.", e: "Setup, troubleshoot, dispose of old devices." },
+  { name: "Organization", cat: "Home", icon: "i-box", c: "Notice when systems break down and clutter rules.", p: "Design systems for closets, drawers, paperwork.", e: "Sort, label, donate, maintain." },
+
+  // Out
+  { name: "Transportation (Kids)", cat: "Out", daily: true, icon: "i-car", c: "Track every drop-off, pickup, and activity.", p: "Build the routing, carpool plan, backup driver.", e: "Drive (or coordinate the driver) reliably." },
+  { name: "Travel", cat: "Out", icon: "i-globe", c: "Imagine the trip — where, when, why.", p: "Book flights, lodging, itinerary, budget.", e: "Get everyone there and back smoothly." },
+  { name: "Packing — Travel", cat: "Out", icon: "i-suitcase", c: "Anticipate weather, activities, every body's needs.", p: "Make lists, gather, lay out by person.", e: "Pack the bags and unpack on return." },
+  { name: "Packing — Local", cat: "Out", daily: true, icon: "i-backpack", c: "Anticipate the day — water bottle, sunscreen, snacks, gear.", p: "Pre-pack the day before; checklist by activity.", e: "Pack and unpack daily bags." },
+
+  // Caregiving
+  { name: "Bathing & Grooming", cat: "Caregiving", daily: true, icon: "i-bath", c: "Track when each child last bathed and their growing needs.", p: "Stock soaps, towels, age-appropriate tools.", e: "Run the bath/shower, supervise, dry, dress." },
+  { name: "Bedtime Routine (Kids)", cat: "Caregiving", daily: true, icon: "i-moon-book", c: "Anticipate winding-down needs.", p: "Sequence bath, books, lights out; consistent schedule.", e: "Run the routine, every night." },
+  { name: "Diapering & Potty Training", cat: "Caregiving", daily: true, icon: "i-stroller", c: "Notice cues and developmental readiness.", p: "Stock supplies; choose method, language, rewards.", e: "Change diapers; coach through training." },
+  { name: "Kids' Clothes", cat: "Caregiving", icon: "i-shirt", c: "Notice growth, season changes, what fits.", p: "Inventory, shop, pass-down or donate.", e: "Buy, swap closets, return, store." },
+  { name: "Morning Routine (Kids)", cat: "Caregiving", daily: true, icon: "i-sun", c: "Anticipate every step from wake-up to door.", p: "Set order: dressed, fed, teeth, packed, out.", e: "Move every kid through it on time." },
+  { name: "Medical & Healthy Living (Kids)", cat: "Caregiving", icon: "i-medical", c: "Track checkups, illnesses, nutrition, exercise.", p: "Schedule appointments, pick providers, manage records.", e: "Take them, follow through on care plans." },
+  { name: "Dental (Kids)", cat: "Caregiving", icon: "i-tooth", c: "Track baby teeth, hygiene, orthodontia signals.", p: "Schedule cleanings, coordinate orthodontist.", e: "Take them, pay, manage retainers." },
+  { name: "Homework & School Supplies", cat: "Caregiving", daily: true, icon: "i-backpack", c: "Track assignments, projects, supply needs.", p: "Set time/place; stock supplies.", e: "Sit with them, help, check, send back." },
+  { name: "Teacher Communication", cat: "Caregiving", icon: "i-pen", c: "Watch for emails, conferences, behavior signals.", p: "Schedule conferences, draft replies, share with partner.", e: "Respond to the teacher, attend conferences." },
+  { name: "Special Needs & Mental Health", cat: "Caregiving", icon: "i-medical", c: "Tune into emotional/cognitive cues for each kid.", p: "Find specialists, IEPs, therapies, school support.", e: "Take them, advocate, follow plans." },
+  { name: "Birth Control & Family Planning", cat: "Caregiving", icon: "i-medical", c: "Discuss the timing/size of your family.", p: "Choose method, schedule appointments.", e: "Use it, refill it, manage it." },
+  { name: "Estate Planning & Life Insurance", cat: "Caregiving", icon: "i-key", c: "Recognize the family needs protection.", p: "Find an attorney, choose policies, name guardians.", e: "Sign the docs, pay premiums, update annually." },
+  { name: "Health Insurance", cat: "Caregiving", icon: "i-medical", c: "Anticipate coverage gaps and renewal windows.", p: "Choose plan, file claims, track HSA/FSA.", e: "Pay, submit, fight denials." },
+  { name: "Grooming & Wardrobe (Adult)", cat: "Caregiving", icon: "i-shirt", c: "Notice when haircuts, refreshes are due.", p: "Book appointments; refresh wardrobe seasonally.", e: "Show up, shop, return what doesn't work." },
+  { name: "Self-Care", cat: "Caregiving", icon: "i-sun", c: "Notice your own depletion before it tips over.", p: "Schedule rest, exercise, time alone.", e: "Actually take it." },
+  { name: "Parents / In-Laws", cat: "Caregiving", icon: "i-people", c: "Stay alert to their health, mood, milestones.", p: "Schedule visits, calls, gifts, support.", e: "Show up, call, take them to the doctor." },
+  { name: "Pets", cat: "Caregiving", daily: true, icon: "i-pet", c: "Notice food, water, exercise, vet needs.", p: "Choose vet, food, walker, boarding.", e: "Feed, walk, vet, clean up after." },
+
+  // Magic
+  { name: "Birthday Celebrations", cat: "Magic", icon: "i-cake", c: "Remember the date and what would feel special.", p: "Plan party, cake, guests, gifts, theme.", e: "Throw the party; clean up after." },
+  { name: "Holiday Cards", cat: "Magic", icon: "i-mail", c: "Decide whether you do them and the vibe.", p: "Photo, design, list, addresses, stamps.", e: "Order, address, mail." },
+  { name: "Holidays", cat: "Magic", icon: "i-snowflake", c: "Hold the family's traditions and meaning.", p: "Plan menus, decor, travel, hosting.", e: "Cook, host, decorate, undecorate." },
+  { name: "Marriage & Romance", cat: "Magic", icon: "i-heart", c: "Notice the temperature of your relationship.", p: "Plan dates, getaways, intentional time.", e: "Show up present, again and again." },
+  { name: "Extended Family", cat: "Magic", icon: "i-people", c: "Track births, deaths, milestones, drama.", p: "Plan visits, calls, gifts, condolences.", e: "Make the call, send the card, show up." },
+  { name: "Informal Education (Kids)", cat: "Magic", icon: "i-moon-book", c: "See what sparks each child's curiosity.", p: "Find museums, books, classes, conversations.", e: "Take them, talk about it, repeat." },
+  { name: "Gifts (Family)", cat: "Magic", icon: "i-gift", c: "Anticipate occasions and tastes.", p: "Choose, budget, shop.", e: "Buy, wrap, give on time." },
+  { name: "Gifts (VIPs)", cat: "Magic", icon: "i-gift", c: "Track teachers, coaches, sitters, helpers.", p: "Decide what's appropriate and when.", e: "Buy, write, deliver." },
+  { name: "Partner Coach", cat: "Magic", icon: "i-handheart", c: "Notice your partner's growth and dreams.", p: "Make space, ask hard questions, listen.", e: "Cheer them on, hold the fort, repeat." },
+  { name: "Discipline & Screen Time", cat: "Magic", daily: true, icon: "i-clock", c: "Set the family's values around limits.", p: "Agree on rules, consequences, reviews.", e: "Enforce consistently, with both partners aligned." },
+  { name: "Thank You Notes", cat: "Magic", icon: "i-pen", c: "Track what gifts/kindnesses need acknowledgment.", p: "Decide format, draft messages.", e: "Write, address, send." },
+  { name: "Watching the Kids", cat: "Magic", daily: true, icon: "i-handheart", c: "Be the on-call parent, alert and present.", p: "Plan activities, snacks, transitions.", e: "Be physically with them, fully." },
+  { name: "Spirituality", cat: "Magic", icon: "i-candle", c: "Hold what you want for your family's inner life.", p: "Choose practice, community, education.", e: "Show up at services, holidays, rituals." },
+
+  // Wild
+  { name: "First Year with Infants", cat: "Wild", icon: "i-stroller", c: "Anticipate the seismic shift before it lands.", p: "Set up sleep, feeding, leave, support.", e: "Survive the year together." },
+  { name: "Home Renovation", cat: "Wild", icon: "i-tools", c: "Identify what the house needs.", p: "Hire pros, design, budget, sequence.", e: "Run the project to completion." },
+  { name: "Moving", cat: "Wild", icon: "i-box", c: "Decide it's time and where.", p: "Logistics, schools, movers, mail forward.", e: "Pack, move, unpack, settle." },
+  { name: "Death", cat: "Wild", icon: "i-candle", c: "Anticipate or absorb the loss.", p: "Funeral, estate, family logistics.", e: "Be there for everyone, including yourself." },
+  { name: "Glitch in the Matrix", cat: "Wild", icon: "i-sparkle", c: "Recognize the unexpected curveball.", p: "Triage, regroup, revise plans.", e: "Handle it without losing the household." },
+  { name: "Job Loss & Money Problems", cat: "Wild", icon: "i-money", c: "Face the financial reality openly.", p: "Budget, job search, support network.", e: "Execute the plan; protect the family." },
+
+  // Unicorn
+  { name: "Unicorn Space (Yours)", cat: "Unicorn", icon: "i-star", c: "Identify what makes you uniquely you.", p: "Carve out time and resources for it.", e: "Actually pursue it, regularly." },
+  { name: "Unicorn Space (Partner's)", cat: "Unicorn", icon: "i-star", c: "Recognize and value your partner's pursuit.", p: "Hold the fort so they can show up for it.", e: "Protect their time without resentment." },
+
+  // Grind
+  { name: "School Breaks", cat: "Grind", icon: "i-calendar", c: "Anticipate every school holiday and gap.", p: "Plan childcare, camps, travel, family time.", e: "Cover every day off the kids have." },
+  { name: "School Forms", cat: "Grind", icon: "i-pen", c: "Watch for forms, permission slips, deadlines.", p: "File, sign, return on time.", e: "Send it back; keep a copy." },
+  { name: "School Transitions", cat: "Grind", icon: "i-backpack", c: "See the next phase coming (preK, K, MS, HS).", p: "Tour, apply, register, prep your kid.", e: "Get them across the threshold." },
+  { name: "Extracurricular — Sports", cat: "Grind", icon: "i-ball", c: "Notice interests and seasons.", p: "Sign up, gear, schedule, snack duty.", e: "Get them there, cheer, wash uniforms." },
+  { name: "Extracurricular — Non-Sports", cat: "Grind", icon: "i-music", c: "See art, music, drama, coding interests.", p: "Sign up, instruments, recitals.", e: "Take them, watch them, support practice." },
+  { name: "Adult Friendships", cat: "Grind", icon: "i-people", c: "Notice your own social needs and people who matter.", p: "Reach out, plan, reciprocate.", e: "Show up, again and again." },
+  { name: "Civic & Cultural Enrichment", cat: "Grind", icon: "i-globe", c: "Stay engaged with the community and arts.", p: "Find events, vote plan, museum visits.", e: "Attend, participate, donate." },
+  { name: "Charity & Community Service", cat: "Grind", icon: "i-handheart", c: "See where the family can give back.", p: "Choose causes, sign up, set cadence.", e: "Show up; bring the kids." },
+  { name: "Childcare Helpers", cat: "Grind", icon: "i-handshake", c: "Anticipate gaps in care.", p: "Find sitters/nannies, vet, schedule, pay.", e: "Onboard, communicate, manage relationship." },
+  { name: "Calendar Keeper", cat: "Grind", daily: true, icon: "i-calendar", c: "Hold every appointment, deadline, event in mind.", p: "Maintain shared calendar, conflicts, reminders.", e: "Update daily, broadcast changes." },
+  { name: "Cash & Bills", cat: "Grind", daily: true, icon: "i-money", c: "Notice every bill, due date, account state.", p: "Set up autopay, alerts, review.", e: "Pay, file, reconcile." },
+  { name: "Money Manager", cat: "Grind", icon: "i-money", c: "Hold the long arc of family finances.", p: "Budget, invest, retirement, taxes, advisor.", e: "Execute moves, track results." },
+  { name: "Points, Miles & Coupons", cat: "Grind", icon: "i-money", c: "Track loyalty programs and offers.", p: "Choose cards, plan redemptions.", e: "Use them before they expire." },
+  { name: "Returns & Store Credits", cat: "Grind", icon: "i-box", c: "Notice what didn't work and the return window.", p: "Gather receipts, schedule the trip.", e: "Return it, log the credit." },
+  { name: "First Aid & Safety", cat: "Grind", icon: "i-medical", c: "Anticipate hazards and emergency needs.", p: "Stock kits, know plans, take CPR.", e: "Respond when something happens." },
+  { name: "Friendships & Social Media (Kids)", cat: "Grind", icon: "i-people", c: "Track who they hang out with online and off.", p: "Set rules, monitor, discuss.", e: "Have the conversations; intervene when needed." },
+  { name: "Gestures of Love (Kids)", cat: "Grind", daily: true, icon: "i-heart", c: "Notice what makes each child feel seen.", p: "Notes, surprises, traditions.", e: "Deliver the small magic, often." },
+  { name: "Hard Questions (Kids)", cat: "Grind", icon: "i-handheart", c: "Anticipate the questions before they arrive.", p: "Decide your answers and language.", e: "Be present and honest when asked." },
+  { name: "Magical Beings (Kids)", cat: "Grind", icon: "i-sparkle", c: "Hold Santa/Tooth Fairy/Easter Bunny lore.", p: "Plan the reveals and rituals.", e: "Pull off the magic on the night." },
+  { name: "Middle of Night Comfort", cat: "Grind", daily: true, icon: "i-bed", c: "Be alert for the cry, the bad dream.", p: "Decide who's on, when.", e: "Get up. Comfort. Repeat." },
+  { name: "School Service", cat: "Grind", icon: "i-handshake", c: "Notice volunteer needs, PTA, fundraisers.", p: "Sign up, plan contribution.", e: "Show up; do the thing." },
+  { name: "Serious Illness", cat: "Grind", icon: "i-medical", c: "Recognize the change in self or loved one.", p: "Treatment plans, second opinions, support.", e: "Coordinate care, advocate, be present." },
+  { name: "Showing Up & Participating (Kids)", cat: "Grind", icon: "i-handheart", c: "Track recitals, games, performances.", p: "RSVP, schedule, prep your kid.", e: "Be there, fully." },
+  { name: "Social Plans (Couples)", cat: "Grind", icon: "i-people", c: "Notice the need for couple time and other couples.", p: "Plan dates, double dates, getaways.", e: "Book sitter; show up." },
+  { name: "Storage & Seasonal Items", cat: "Grind", icon: "i-box", c: "Anticipate seasonal swaps.", p: "Inventory, label, rotate.", e: "Swap closets, decor, gear." },
+  { name: "Tutoring & Coaching (Kids)", cat: "Grind", icon: "i-backpack", c: "Notice where a kid needs extra help.", p: "Find tutor/coach, schedule, pay.", e: "Drive, monitor progress, adjust." },
+  { name: "Values & Good Deeds (Kids)", cat: "Grind", icon: "i-handheart", c: "Hold your family's moral north.", p: "Choose teaching moments, service projects.", e: "Model and discuss, daily." },
+  { name: "Weekend Plans", cat: "Grind", icon: "i-sun", c: "Sense the weekend's needs — busy, restful, social.", p: "Plan activities, meals, downtime.", e: "Make it happen." },
+  { name: "Welcoming a Child Into Home", cat: "Grind", icon: "i-stroller", c: "Anticipate the arrival's emotional weight.", p: "Set up room, supplies, support.", e: "Welcome them, settle them in." },
+  { name: "Aging / Ailing Parent", cat: "Grind", icon: "i-people", c: "Notice the slow change and signals.", p: "Care plan, finances, conversations, siblings.", e: "Show up; coordinate care." },
+  { name: "Car Maintenance", cat: "Grind", icon: "i-car", c: "Notice mileage, sounds, deadlines.", p: "Schedule service, registration, insurance.", e: "Take it in; pay; pick up." },
+  { name: "Hosting", cat: "Grind", icon: "i-house", c: "Sense when your home should hold others.", p: "Guest list, menu, prep the home.", e: "Cook, welcome, clean up after." },
+  { name: "New Job", cat: "Grind", icon: "i-briefcase", c: "Anticipate the transition's family impact.", p: "Plan childcare, schedule, support.", e: "Make space for the ramp-up." },
+  { name: "Tic-Tac-Toe Care Game", cat: "Grind", icon: "i-handheart", c: "Identify what each kid needs from each parent.", p: "Rotate one-on-ones, special time.", e: "Show up for the special time." },
+  { name: "Memories & Photos", cat: "Grind", daily: true, icon: "i-camera", c: "Notice the moments worth keeping.", p: "Storage system, printing, albums.", e: "Capture, organize, share." },
+];
+
+/* ---------- State ---------- */
+const STORAGE_KEY = "fairplay.v2";
+const defaultState = () => ({
+  nameA: "", nameB: "",
+  holders: Object.fromEntries(CARDS.map(c => [c.name, "NONE"])),
+  filter: "ALL",
+});
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    const base = defaultState();
+    return {
+      nameA: parsed.nameA ?? "",
+      nameB: parsed.nameB ?? "",
+      holders: { ...base.holders, ...(parsed.holders || {}) },
+      filter: parsed.filter ?? "ALL",
+    };
+  } catch { return defaultState(); }
+}
+function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+let state = loadState();
+
+/* ---------- Helpers ---------- */
+const $ = (id) => document.getElementById(id);
+const nameA = () => state.nameA?.trim() || "Partner A";
+const nameB = () => state.nameB?.trim() || "Partner B";
+const catLabel = (id) => CATS.find(c => c.id === id)?.label || id;
+const holderLabel = (h) => h === "A" ? nameA() : h === "B" ? nameB() : h === "BOTH" ? "Both" : "Unassigned";
+
+function counts() {
+  const c = { A: 0, B: 0, BOTH: 0, NONE: 0 };
+  for (const card of CARDS) c[state.holders[card.name] || "NONE"]++;
+  return c;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+}
+
+function cardMarkup(card, opts = {}) {
+  const h = state.holders[card.name] || "NONE";
+  const big = opts.big ? "demo-card" : "";
+  const cat = catLabel(card.cat).toUpperCase();
+  return `
+    <div class="card held-${h} ${big}" data-name="${escapeHtml(card.name)}">
+      <div class="card-cat-left">${escapeHtml(cat)}</div>
+      <div class="card-cat-right">${escapeHtml(cat)}</div>
+      <div class="card-title">${escapeHtml(card.name)}</div>
+      <div class="card-art">
+        <svg class="rough" viewBox="0 0 64 64"><use href="#${card.icon}"/></svg>
+        <svg class="sparkle s1" viewBox="0 0 24 24"><use href="#i-sparkle"/></svg>
+        <svg class="sparkle s2" viewBox="0 0 24 24"><use href="#i-sparkle"/></svg>
+        <svg class="sparkle s3" viewBox="0 0 24 24"><use href="#i-sparkle"/></svg>
+      </div>
+      <div class="card-foot">
+        <span class="holder ${h}">${escapeHtml(holderLabel(h))}</span>
+        ${card.daily ? '<span class="daily">Daily</span>' : ""}
+      </div>
+    </div>
+  `;
+}
+
+/* ---------- Render ---------- */
+function renderHeader() {
+  $("nameA").value = state.nameA;
+  $("nameB").value = state.nameB;
+  $("lblA").textContent = nameA();
+  $("lblB").textContent = nameB();
+  $("legA").textContent = nameA();
+  $("legB").textContent = nameB();
+  const c = counts();
+  $("cntA").textContent = c.A;
+  $("cntB").textContent = c.B;
+  $("cntBoth").textContent = c.BOTH;
+  $("cntUn").textContent = c.NONE;
+  const total = CARDS.length;
+  const pct = (n) => (n / total) * 100;
+  const bar = $("bar");
+  bar.innerHTML = "";
+  for (const s of [
+    { cls: "bar-a", v: pct(c.A) },
+    { cls: "bar-both", v: pct(c.BOTH) },
+    { cls: "bar-b", v: pct(c.B) },
+    { cls: "bar-un", v: pct(c.NONE) },
+  ]) {
+    const d = document.createElement("div");
+    d.className = s.cls;
+    d.style.width = s.v + "%";
+    bar.appendChild(d);
+  }
+  const assigned = c.A + c.B + c.BOTH;
+  let msg = "";
+  if (assigned === 0) msg = "Start by assigning cards.";
+  else {
+    const diff = c.A - c.B;
+    if (diff === 0) msg = "Balanced ⚖";
+    else if (diff > 0) msg = `${nameA()} holds ${diff} more`;
+    else msg = `${nameB()} holds ${-diff} more`;
+  }
+  $("balanceMsg").textContent = msg;
+}
+
+function renderFilters() {
+  const wrap = $("filters");
+  wrap.innerHTML = "";
+  const all = document.createElement("div");
+  all.className = "chip" + (state.filter === "ALL" ? " active" : "");
+  all.textContent = `All · ${CARDS.length}`;
+  all.onclick = () => { state.filter = "ALL"; saveState(); renderFilters(); renderBoard(); };
+  wrap.appendChild(all);
+
+  for (const cat of CATS) {
+    const n = CARDS.filter(c => c.cat === cat.id).length;
+    if (n === 0) continue;
+    const chip = document.createElement("div");
+    chip.className = "chip" + (state.filter === cat.id ? " active" : "");
+    chip.textContent = `${cat.label} · ${n}`;
+    chip.onclick = () => { state.filter = cat.id; saveState(); renderFilters(); renderBoard(); };
+    wrap.appendChild(chip);
+  }
+
+  const sep = document.createElement("span");
+  sep.style.cssText = "width:1px;height:20px;background:var(--ink);margin:0 4px;display:inline-block";
+  wrap.appendChild(sep);
+
+  for (const who of ["A", "B", "BOTH", "NONE"]) {
+    const label = who === "A" ? nameA() : who === "B" ? nameB() : who === "BOTH" ? "Both" : "Unassigned";
+    const n = CARDS.filter(c => (state.holders[c.name] || "NONE") === who).length;
+    const chip = document.createElement("div");
+    chip.className = "chip" + (state.filter === "HOLDER_" + who ? " active" : "");
+    const swatch = who === "A" ? "var(--a)" : who === "B" ? "var(--b)" : who === "BOTH" ? "var(--both)" : "var(--cream-3)";
+    chip.innerHTML = `<span class="swatch" style="background:${swatch}"></span>${escapeHtml(label)} · ${n}`;
+    chip.onclick = () => { state.filter = "HOLDER_" + who; saveState(); renderFilters(); renderBoard(); };
+    wrap.appendChild(chip);
+  }
+}
+
+function renderBoard() {
+  const board = $("board");
+  board.innerHTML = "";
+  const filtered = CARDS.filter(card => {
+    if (state.filter === "ALL") return true;
+    if (state.filter.startsWith("HOLDER_")) return (state.holders[card.name] || "NONE") === state.filter.slice(7);
+    return card.cat === state.filter;
+  });
+
+  for (const cat of CATS) {
+    const cards = filtered.filter(c => c.cat === cat.id);
+    if (cards.length === 0) continue;
+    const sec = document.createElement("section");
+    sec.className = "category";
+    sec.innerHTML = `
+      <div class="category-head">
+        <h2>${escapeHtml(cat.label)}</h2>
+        <span class="count">${cards.length} ${cards.length === 1 ? "card" : "cards"}</span>
+      </div>
+      <div class="grid"></div>
+    `;
+    const grid = sec.querySelector(".grid");
+    for (const card of cards) {
+      grid.insertAdjacentHTML("beforeend", cardMarkup(card));
+    }
+    board.appendChild(sec);
+  }
+
+  if (filtered.length === 0) {
+    board.innerHTML = '<div style="color:var(--ink-2);padding:32px;text-align:center;font-size:13px;">No cards in this view.</div>';
+  }
+
+  // Wire card clicks
+  board.querySelectorAll(".card").forEach(el => {
+    el.addEventListener("click", () => {
+      const name = el.getAttribute("data-name");
+      const card = CARDS.find(c => c.name === name);
+      if (card) openModal(card);
+    });
+  });
+}
+
+/* ---------- Modal ---------- */
+let modalCard = null;
+function openModal(card) {
+  modalCard = card;
+  $("mTitle").textContent = card.name;
+  $("mCat").textContent = catLabel(card.cat) + (card.daily ? " · Daily Grind" : "");
+  $("mC").textContent = card.c;
+  $("mP").textContent = card.p;
+  $("mE").textContent = card.e;
+  $("mCardPreview").innerHTML = cardMarkup(card, { big: true });
+  // Disable click on the preview card
+  const pv = $("mCardPreview").querySelector(".card");
+  if (pv) { pv.style.cursor = "default"; pv.style.pointerEvents = "none"; }
+
+  const cur = state.holders[card.name] || "NONE";
+  $("mHolderLabel").textContent = "Held by: " + holderLabel(cur);
+
+  const a = $("mAssign");
+  a.innerHTML = "";
+  const opts = [
+    { who: "A", label: nameA() },
+    { who: "B", label: nameB() },
+    { who: "BOTH", label: "Both" },
+    { who: "NONE", label: "Unassign" },
+  ];
+  for (const o of opts) {
+    const b = document.createElement("button");
+    b.className = o.who + (cur === o.who ? " active" : "");
+    b.textContent = o.label;
+    b.onclick = () => {
+      state.holders[card.name] = o.who;
+      saveState();
+      renderHeader();
+      renderFilters();
+      renderBoard();
+      openModal(card);
+    };
+    a.appendChild(b);
+  }
+  $("scrim").classList.add("show");
+}
+function closeModal() { $("scrim").classList.remove("show"); modalCard = null; }
+$("mClose").onclick = closeModal;
+$("scrim").onclick = (e) => { if (e.target.id === "scrim") closeModal(); };
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+/* ---------- Controls ---------- */
+$("nameA").addEventListener("input", (e) => { state.nameA = e.target.value; saveState(); renderHeader(); renderFilters(); renderBoard(); });
+$("nameB").addEventListener("input", (e) => { state.nameB = e.target.value; saveState(); renderHeader(); renderFilters(); renderBoard(); });
+$("dealBtn").onclick = () => {
+  for (const card of CARDS) {
+    if ((state.holders[card.name] || "NONE") === "NONE") {
+      state.holders[card.name] = Math.random() < 0.5 ? "A" : "B";
+    }
+  }
+  saveState();
+  renderHeader(); renderFilters(); renderBoard();
+};
+$("resetBtn").onclick = () => {
+  if (!confirm("Unassign every card?")) return;
+  for (const card of CARDS) state.holders[card.name] = "NONE";
+  saveState();
+  renderHeader(); renderFilters(); renderBoard();
+};
+
+renderHeader();
+renderFilters();
+renderBoard();
+</script>
+</body>
+</html>
